@@ -1,39 +1,47 @@
 import { useState } from 'react';
 import { Bot, SendHorizonal } from 'lucide-react';
 import { Button } from './Button';
+import { api } from '../api/client';
 
 const starterMessages = [
   { role: 'assistant', text: 'Hi, I am your FitAI coach. Ask about workouts, meals, BMI, hydration, or form cues.' }
 ];
 
-function answerQuestion(question, recommendation) {
-  const lower = question.toLowerCase();
-  if (lower.includes('diet') || lower.includes('meal') || lower.includes('protein')) {
-    return `Aim for about ${recommendation.dailyCalories} kcal today. Your current plan includes ${recommendation.diet[0].item} for breakfast and keeps protein spread across meals.`;
-  }
-  if (lower.includes('water') || lower.includes('hydration')) {
-    return `Your hydration target is ${recommendation.waterLiters} L. A simple rhythm is one glass after waking, one before each meal, and small refills between sessions.`;
-  }
-  if (lower.includes('bmi') || lower.includes('weight')) {
-    return `Your BMI is ${recommendation.bmi}, currently marked ${recommendation.category.label}. ${recommendation.category.suggestion}`;
-  }
-  if (lower.includes('push') || lower.includes('squat') || lower.includes('curl') || lower.includes('jack')) {
-    return 'For form tracking, pick the exercise in AI Exercise Tracking, start the camera, and keep your full body visible. Move slowly enough for clean joint-angle detection.';
-  }
-  return `For ${recommendation.focus.toLowerCase()}, start with today’s plan: strength work, cardio intervals, mobility, and ${recommendation.waterLiters} L water. Keep the first session easy enough that form stays sharp.`;
-}
-
-export function ChatAssistant({ recommendation }) {
+export function ChatAssistant() {
   const [messages, setMessages] = useState(starterMessages);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function sendMessage(event) {
+  async function sendMessage(event) {
     event.preventDefault();
-    if (!input.trim()) return;
-    const userMessage = { role: 'user', text: input.trim() };
-    const assistantMessage = { role: 'assistant', text: answerQuestion(input, recommendation) };
-    setMessages((current) => [...current, userMessage, assistantMessage]);
+    const question = input.trim();
+    if (!question || loading) return;
+
+    const userMessage = { role: 'user', text: question };
+    const nextMessages = [...messages, userMessage];
+
+    setMessages(nextMessages);
     setInput('');
+    setLoading(true);
+
+    try {
+      const { data } = await api.post('/coach/message', {
+        message: question,
+        history: messages.slice(-8)
+      });
+
+      setMessages((current) => [...current, { role: 'assistant', text: data.answer }]);
+    } catch (apiError) {
+      setMessages((current) => [
+        ...current,
+        {
+          role: 'assistant',
+          text: apiError.response?.data?.message || apiError.message || 'AI Coach is unavailable right now.'
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -44,14 +52,14 @@ export function ChatAssistant({ recommendation }) {
         </div>
         <div>
           <h2 className="text-lg font-bold text-slate-950 dark:text-white">AI Chat Coach</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Quick guidance based on your profile.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Gemini-powered guidance based on your profile.</p>
         </div>
       </div>
-      <div className="scrollbar-soft mt-4 max-h-72 space-y-3 overflow-y-auto pr-1">
+      <div className="scrollbar-soft mt-4 max-h-[32rem] space-y-3 overflow-y-auto pr-1">
         {messages.map((message, index) => (
           <div
             key={`${message.role}-${index}`}
-            className={`rounded-lg p-3 text-sm ${
+            className={`rounded-lg p-3 text-sm leading-relaxed ${
               message.role === 'user'
                 ? 'ml-8 bg-slate-950 text-white dark:bg-white dark:text-slate-950'
                 : 'mr-8 bg-white/70 text-slate-700 dark:bg-slate-950/50 dark:text-slate-200'
@@ -60,6 +68,11 @@ export function ChatAssistant({ recommendation }) {
             {message.text}
           </div>
         ))}
+        {loading && (
+          <div className="mr-8 rounded-lg bg-white/70 p-3 text-sm text-slate-500 dark:bg-slate-950/50 dark:text-slate-300">
+            Thinking...
+          </div>
+        )}
       </div>
       <form className="mt-4 flex gap-2" onSubmit={sendMessage}>
         <input
@@ -67,8 +80,9 @@ export function ChatAssistant({ recommendation }) {
           onChange={(event) => setInput(event.target.value)}
           placeholder="Ask your coach..."
           className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-mint dark:border-slate-700 dark:bg-slate-950"
+          disabled={loading}
         />
-        <Button className="w-11 px-0" type="submit" variant="accent" aria-label="Send message">
+        <Button className="w-11 px-0" type="submit" variant="accent" aria-label="Send message" disabled={loading || !input.trim()}>
           <SendHorizonal size={18} />
         </Button>
       </form>

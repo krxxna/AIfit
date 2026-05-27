@@ -4,12 +4,19 @@ import bcrypt from 'bcryptjs';
 const profileSchema = new mongoose.Schema(
   {
     age: Number,
-    gender: { type: String, enum: ['Male', 'Female', 'Other'], default: 'Other' },
+    gender: { type: String, enum: ['Male', 'Female', 'Other'] },
     height: Number,
+    heightUnit: { type: String, enum: ['cm', 'in'], default: 'cm' },
+    heightInches: Number,
     weight: Number,
-    fitnessGoal: { type: String, default: 'Improve Fitness' },
-    activityLevel: { type: String, enum: ['Low', 'Moderate', 'High'], default: 'Moderate' },
-    foodPreference: { type: String, enum: ['Veg', 'Non-Veg', 'Vegan'], default: 'Veg' }
+    targetWeight: Number,
+    fitnessGoal: String,
+    activityLevel: { type: String, enum: ['Low', 'Moderate', 'High'] },
+    foodPreference: { type: String, enum: ['Veg', 'Non-Veg', 'Vegan'] },
+    experienceLevel: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced'] },
+    workoutDaysPerWeek: Number,
+    healthNotes: { type: String, default: '' },
+    profileCompletedAt: Date
   },
   { _id: false }
 );

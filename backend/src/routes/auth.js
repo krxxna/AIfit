@@ -4,6 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { z } from 'zod';
 import { User } from '../models/User.js';
 import { signToken } from '../middleware/auth.js';
+import { sanitizeUser } from '../utils/userSerialization.js';
 
 const router = express.Router();
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -72,15 +73,5 @@ router.post('/google', async (req, res, next) => {
     next(error);
   }
 });
-
-function sanitizeUser(user) {
-  return {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    profile: user.profile
-  };
-}
 
 export default router;

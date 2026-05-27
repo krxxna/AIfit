@@ -1,12 +1,18 @@
 export const defaultProfile = {
-  name: 'Aarav Mehta',
-  age: 29,
-  gender: 'Male',
-  height: 176,
-  weight: 74,
-  fitnessGoal: 'Build Muscle',
-  activityLevel: 'Moderate',
-  foodPreference: 'Veg'
+  name: '',
+  age: '',
+  gender: '',
+  height: '',
+  heightUnit: 'cm',
+  heightInches: '',
+  weight: '',
+  targetWeight: '',
+  fitnessGoal: '',
+  activityLevel: '',
+  foodPreference: '',
+  experienceLevel: '',
+  workoutDaysPerWeek: '',
+  healthNotes: ''
 };
 
 export const workoutHistory = [

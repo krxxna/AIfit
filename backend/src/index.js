@@ -54,6 +54,7 @@ import profileRoutes from './routes/profile.js';
 import recommendationRoutes from './routes/recommendations.js';
 import adminRoutes from './routes/admin.js';
 import notificationRoutes from './routes/notifications.js';
+import coachRoutes from './routes/coach.js';
 
 const app = express();
 const port = process.env.PORT || 5001;
@@ -110,6 +111,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/coach', coachRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 
